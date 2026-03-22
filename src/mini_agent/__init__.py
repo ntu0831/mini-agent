@@ -12,6 +12,16 @@ from .errors import (
     ToolError,
     ToolValidationError,
 )
+from .tools import (
+    ToolParameter,
+    ToolRegistry,
+    ToolResult,
+    ToolSpec,
+    build_default_registry,
+    calculator,
+    current_time,
+    web_search,
+)
 
 __all__ = [
     "Config",
@@ -19,7 +29,15 @@ __all__ = [
     "LLMError",
     "MiniAgentError",
     "ToolError",
+    "ToolParameter",
+    "ToolRegistry",
+    "ToolResult",
+    "ToolSpec",
     "ToolValidationError",
+    "build_default_registry",
+    "calculator",
+    "current_time",
     "load_env",
+    "web_search",
     "__version__",
 ]
