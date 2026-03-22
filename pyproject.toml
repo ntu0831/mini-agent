@@ -39,6 +39,9 @@ dev = [
     "pre-commit>=3.7.0",
 ]
 
+[project.scripts]
+mini-agent = "mini_agent.cli:main"
+
 [tool.hatch.version]
 path = "src/mini_agent/__init__.py"
 
