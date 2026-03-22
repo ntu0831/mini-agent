@@ -1,0 +1,65 @@
+name: Bug report
+description: Report a reproducible problem with MiniAgent
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a problem. Please remove API keys and personal data
+        from logs and traces before submitting.
+  - type: input
+    id: version
+    attributes:
+      label: MiniAgent version
+      description: Output of `mini-agent --version`
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: input
+    id: python
+    attributes:
+      label: Python version and OS
+      placeholder: "3.12.2 on macOS 14"
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Model mode
+      options:
+        - Offline mock model
+        - OpenAI-compatible provider
+        - Local server (Ollama / vLLM)
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      description: The smallest command or code snippet that triggers the issue.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour and logs
+      description: Include the trace file if possible, with secrets removed.
+      render: shell
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I removed API keys and personal data from the report.
+          required: true
+        - label: I can reproduce this with the latest main branch.
+          required: false
