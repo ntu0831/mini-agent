@@ -7,8 +7,8 @@ As the project is pre-1.0, older minor versions may not receive backports.
 
 ## Reporting a vulnerability
 
-Please **do not** open a public issue. Use GitHub's private security advisory
-feature for this repository (Security → Advisories → Report a vulnerability).
+Please do not open a public issue. Use GitHub's private security advisory
+feature for this repository (under Security > Advisories > Report a vulnerability).
 If advisories are unavailable, open a minimal issue asking a maintainer for a
 private channel, without including exploit details. Include:
 
@@ -22,9 +22,8 @@ disclosure timeline with you.
 
 ## Threat model
 
-MiniAgent is a small runtime that connects a model to tools. It is **not** a
-sandbox and does not provide tenant isolation. Review the following before
-deploying it:
+MiniAgent is a small runtime connecting a model to tools. It provides no
+execution sandbox or tenant isolation. Review the following before deployment:
 
 ### Prompt injection and untrusted tool output
 
@@ -60,10 +59,8 @@ the client sends your prompts and API key to that endpoint. The placeholder key
 
 ### Calculator
 
-The calculator evaluates a restricted AST and rejects imports, attribute access,
-comprehensions and oversized exponents. It is a convenience tool, not a
-general-purpose execution sandbox. Do not route untrusted arbitrary code through
-it.
+The calculator evaluates arithmetic expressions through a restricted AST
+whitelist. It cannot safely execute arbitrary code.
 
 ### Dependency and supply chain
 

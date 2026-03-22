@@ -2,20 +2,21 @@
 
 [English](README.md) · 简体中文
 
-**一个小而可审阅的 ReAct Agent 运行时。** 控制循环完全显式：模型输出
-`Thought` / `Action`，工具执行产生 `Observation`，直到 `Finish`。每一轮都可
-追踪、可测试、可复现，适合作为学习材料、二次开发基线或小型自动化任务。
+MiniAgent 是一个轻量且逻辑透明的 ReAct Agent 运行时。其控制循环完全
+显式：模型输出 `Thought` 与 `Action`，工具执行产生 `Observation`，直到
+返回 `Finish`。各环节均记录状态并支持离线测试，便于排查、二开或直接作为
+自动化脚本底座。
 
 ## 特性
 
 - 显式 ReAct 循环：步数预算、重复动作保护、观察结果截断。
 - OpenAI 兼容客户端：指数退避 + 抖动重试、错误分类、token 用量统计。
 - 类型化工具注册表：参数 schema、校验、类型转换、输出截断、装饰器注册。
-- 内置工具：AST 安全计算器、当前时间、多源联网搜索（Tavily → SerpApi → ddgs）。
+- 内置工具：AST 安全计算器、当前时间、多源联网搜索（Tavily、SerpApi 或 ddgs 降级）。
 - 确定性离线模型：没有 API Key 也能跑通完整循环。
 - JSONL trace：每次运行写入带 `run_id` 的结构化事件，便于事后排查。
 - CLI + 可选 Streamlit 网页界面。
-- 97 个测试、91%+ 覆盖率、ruff、mypy strict、Python 3.10–3.13 CI。
+- 97 个测试、91%+ 覆盖率、ruff、mypy strict、Python 3.10-3.13 CI。
 
 ## 快速开始
 
@@ -145,7 +146,7 @@ examples/         # 独立示例
 - 文本协议依赖模型的指令遵循能力；原生 function calling 是后续适配方向。
 - 运行时是同步的，每步执行一个工具调用。
 - 对话历史仅保存在内存中。
-- 计算器是安全求值器，不是通用沙箱；工具输出与网页内容都应视为不可信输入。
+- 计算器通过 AST 白名单限定求值范围，并非通用执行沙箱；工具输出与网页内容需按不可信输入处理。
 - 联网搜索的质量取决于配置的服务商。
 
 更多细节见 [docs/architecture.md](docs/architecture.md) 与
@@ -153,5 +154,5 @@ examples/         # 独立示例
 
 ## 贡献与许可
 
-请阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。安全问题请按
+欢迎提交问题反馈与代码改进。安全问题请按
 [SECURITY.md](SECURITY.md) 私下报告。项目使用 [MIT](LICENSE) 许可。

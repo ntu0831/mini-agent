@@ -1,13 +1,14 @@
 # Architecture
 
-This document describes how MiniAgent executes a question, where failures are
-handled, and which parts are extension points.
+MiniAgent executes questions through an explicit ReAct loop, handles failures
+across each component boundary, and provides extension points for models,
+tools, and tracing.
 
 ## Scope
 
-MiniAgent is a single-agent ReAct runtime. It deliberately excludes planners,
-multi-agent orchestration, vector memory and native function calling. The
-contract is small:
+MiniAgent is a single-agent ReAct runtime without planners, multi-agent
+orchestration, vector memory, or native function calling. The contract has five
+steps:
 
 1. Accept a question.
 2. Let a chat model choose one tool call at a time.
@@ -29,8 +30,8 @@ contract is small:
 | `cli.py` | Argument parsing, interactive session, JSON output |
 | `app.py` | Optional Streamlit presentation layer |
 
-The dependency direction is one-way: `cli`/`app` → `agent` → `llm`, `tools`,
-`parser`, `trace`. The agent never imports the CLI or UI.
+Dependencies flow strictly inward from `cli` and `app` to `agent`, and then to
+`llm`, `tools`, `parser`, and `trace`. The agent never imports the CLI or UI.
 
 ## Run sequence
 
@@ -69,23 +70,24 @@ sequenceDiagram
 
 ## Prompt contract
 
-The prompt is rebuilt every step from four sections:
+The prompt rebuilds every step from four inputs:
 
-- **Available tools** — `ToolRegistry.describe()` renders
+- Available tools rendered by `ToolRegistry.describe()` as
   `name(parameter: type = default): description`.
-- **Previous conversation** — last five turns, each question and answer
-  truncated to 500/300 characters.
-- **Response format** — exactly `Thought: ...` followed by `Action: ...`.
-- **Execution history** — action/observation pairs for the current question.
+- Previous conversation covering the last five turns, with questions and answers
+  truncated to 500 and 300 characters.
+- Required response format, specifying `Thought:` followed by `Action:`.
+- Execution history containing action and observation pairs for the active question.
 
-The system message repeats the format requirement and forbids inventing
-observations. This is a prompt-level mitigation, not a security boundary.
+The system message repeats the format requirement and instructs the model not
+to invent observations. This instruction guides model output; security
+boundaries must be enforced outside the prompt.
 
 ## Parser
 
 `parse_thought_action` removes a wrapping Markdown fence, then:
 
-1. Finds the **last** `Action:` marker (case-insensitive, ASCII or full-width
+1. Finds the last `Action:` marker (case-insensitive, ASCII or full-width
    colon). Everything after it is the action text.
 2. Finds the first `Thought:` and captures up to the action marker.
 
@@ -105,11 +107,11 @@ A `ToolSpec` contains a name, description, implementation and zero or more
 
 Argument parsing:
 
-- **No parameters** — the argument must be empty.
-- **One parameter** — a JSON object with the parameter name is accepted;
-  otherwise the raw text is used.
-- **Multiple parameters** — a JSON object or `key=value` pairs separated by
-  commas, semicolons or newlines.
+- Tools with no parameters require an empty argument string.
+- Tools with one parameter accept either a JSON object matching the parameter name
+  or raw text.
+- Tools with multiple parameters accept a JSON object or key-value pairs
+  separated by commas, semicolons, or newlines.
 
 After parsing, `ToolRegistry` rejects unknown or missing arguments and coerces
 values to the declared type. Validation failures are returned as
@@ -184,8 +186,8 @@ debug level and never interrupt the run.
 
 Observation text is not duplicated into the trace; `tool_result` records its
 size and status, while the event callback carries the content for live UIs. If
-you need full observation text in traces, extend `agent.py` deliberately and
-review the privacy implications in [SECURITY.md](../SECURITY.md).
+you need full observation text in traces, modify `agent.py` and review the
+privacy considerations in [SECURITY.md](../SECURITY.md).
 
 ## Concurrency
 
@@ -197,15 +199,16 @@ agent per browser session.
 
 ## Extension points
 
-- **New tool** — register a `ToolSpec` or use `@registry.tool(...)`.
-- **New model** — implement the `ChatModel` protocol (`chat` returning
+- Add tools by registering a `ToolSpec` or using the `@registry.tool(...)`
+  decorator.
+- Connect new models by implementing the `ChatModel` protocol (`chat` returning
   `LLMResponse`).
-- **New event sink** — pass an `on_event` callback; write to a UI, logger or
-  queue.
-- **New trace format** — wrap `TraceRecorder.emit` or provide a compatible
-  recorder with `emit`/`close`.
-- **New agent policy** — subclass or compose `MiniAgent`; the parser, registry
-  and client are independent.
+- Route lifecycle events by passing an `on_event` callback to write to a UI,
+  logger, or queue.
+- Customize tracing by wrapping `TraceRecorder.emit` or providing a recorder
+  with `emit` and `close`.
+- Adjust agent behaviour by subclassing or composing `MiniAgent`, keeping
+  parser, registry, and client independent.
 
 ## Test strategy
 

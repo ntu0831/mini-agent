@@ -1,9 +1,8 @@
 # Design notes
 
-Short records of the decisions that shape the runtime, including the trade-offs
-we knowingly accepted.
+Design decisions and trade-offs in MiniAgent.
 
-## 001 — Text ReAct protocol instead of native function calling
+## 001: Text ReAct protocol instead of native function calling
 
 **Context.** Providers that expose an OpenAI-compatible endpoint do not all
 support the `tools` parameter or structured tool calls. A portable agent should
@@ -23,7 +22,7 @@ and their parameter signatures.
 - Native function calling can be added later as another `ChatModel`/agent
   policy without changing the tool registry.
 
-## 002 — Synchronous, one tool call per step
+## 002: Synchronous, one tool call per step
 
 **Context.** LLM calls and tools are I/O-bound, so async could improve
 throughput. But concurrency also complicates cancellation, tracing and tests.
@@ -38,7 +37,7 @@ step. The tool registry is not concurrent.
 - Users who need concurrency can run multiple agents in separate threads or
   processes; no global state is shared.
 
-## 003 — Retry only transient provider failures
+## 003: Retry only transient provider failures
 
 **Context.** Retrying every error hides configuration mistakes and can multiply
 cost. Retrying nothing makes the agent fragile under rate limits.
@@ -47,7 +46,7 @@ cost. Retrying nothing makes the agent fragile under rate limits.
 retryable; other 4xx are terminal. If no status is exposed, fall back to
 exception class names (`RateLimitError`, `APITimeoutError`,
 `APIConnectionError`, `InternalServerError`, `TimeoutError`,
-`ConnectionError`, …). Backoff is exponential with optional full jitter and a
+`ConnectionError`). Backoff is exponential with optional full jitter and a
 hard cap.
 
 **Consequences.**
@@ -57,7 +56,7 @@ hard cap.
 - A provider that returns non-standard errors may be classified incorrectly;
   the classifier is centralized in `is_retryable` and easy to extend.
 
-## 004 — Repeated-action guard
+## 004: Repeated-action guard
 
 **Context.** Models can get stuck calling the same tool with the same argument.
 A step budget eventually stops them, but wastes the remaining turns.
@@ -74,7 +73,7 @@ warning observation; the third aborts with `stopped_reason="loop"`.
 - A model that legitimately needs three identical calls must raise the
   threshold; this is documented and configurable.
 
-## 005 — Truncate observations twice
+## 005: Truncate observations twice
 
 **Context.** A search result or stack trace can exceed the model's context
 window. Letting tools return unbounded text also makes traces and UI expensive.
@@ -91,7 +90,7 @@ state how many characters were omitted.
   or add a summarization tool.
 - Two limits allow a tool-level policy that is stricter than the agent's.
 
-## 006 — JSONL tracing, opt-in
+## 006: Opt-in JSONL tracing
 
 **Context.** Debugging a failed run from console output is painful, but always
 writing prompts to disk creates a privacy hazard.
@@ -107,7 +106,7 @@ per line with a shared `run_id`; API keys are never included.
 - The format is append-only and schema-light; adding fields is backward
   compatible.
 
-## 007 — Conversation history stays in memory
+## 007: In-memory conversation history
 
 **Context.** Long-term memory needs storage, schema and privacy decisions that
 are out of scope for a small runtime.
@@ -122,7 +121,7 @@ turns are rendered into the prompt; `clear_history()` removes them.
   inject retrieved context through the system prompt.
 - Prompt size is bounded by the five-turn window and per-field truncation.
 
-## 008 — One agent, no orchestration
+## 008: Single-agent design without orchestration
 
 **Context.** Multi-agent frameworks add routing, shared state and failure
 propagation. They also make the execution path harder to audit.
@@ -133,10 +132,10 @@ agents, or wrap a `MiniAgent` as a tool in another registry.
 **Consequences.**
 
 - The core stays readable and testable.
-- Complex workflows need explicit caller code, which is often clearer than an
-  implicit planner anyway.
+- Complex workflows need explicit caller code, which is clearer than an
+  implicit planner.
 
-## 009 — Treat tool output as untrusted
+## 009: Untrusted tool output
 
 **Context.** Web search results and arbitrary tool output can contain prompt
 injection attempts.

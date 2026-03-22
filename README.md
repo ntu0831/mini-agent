@@ -4,27 +4,23 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Typed](https://img.shields.io/badge/typing-mypy%20strict-blue)](pyproject.toml)
 
-**A small, auditable ReAct agent runtime.** MiniAgent keeps the control loop
-explicit, validates every tool call, retries transient model failures, and
-writes inspectable JSONL traces. It is intentionally not a framework: you can
-read the whole core in one sitting, then extend it without fighting layers of
-abstraction.
+MiniAgent is a small, auditable ReAct agent runtime. It keeps the control
+loop explicit, validates every tool call, retries transient model failures, and
+writes inspectable JSONL traces. You can read the entire core in one sitting and
+extend it directly without navigating layers of framework abstractions.
 
-## Why another agent project?
+## Motivation
 
-Most agent libraries hide the loop behind chains, graphs or planners. That is
-useful in production, but it makes debugging and review hard. MiniAgent takes
-the opposite approach:
+Many agent libraries place execution loops behind graphs or planners. MiniAgent
+focuses on an inspectable core:
 
-- **The loop is the product.** Thought → Action → Observation → Finish is a
-  small state machine you can step through in a debugger.
-- **Failures are first-class.** Transient LLM errors are retried with backoff;
-  malformed model output is fed back as an observation; repeated actions stop
-  the run instead of burning tokens.
-- **Everything is testable.** The model is a protocol. Tests inject a scripted
-  model and never touch the network.
-- **Runs are reproducible.** `--trace` writes one JSONL record per event with a
-  stable `run_id`, so a failed run can be inspected after the fact.
+- Thought, action, observation, and finish form a small state machine you can
+  inspect in a debugger.
+- Transient LLM errors retry with backoff, malformed model output returns to the
+  model as an observation, and repeated actions stop the run early.
+- The model interface is a protocol, so unit tests inject scripted responses
+  without network calls.
+- Traces record each event to JSONL with a stable `run_id` for post-run inspection.
 
 ## Features
 
@@ -35,13 +31,13 @@ the opposite approach:
 - Typed tool registry: parameter schemas, validation, type coercion, output
   truncation and a decorator API.
 - Built-in tools: safe AST calculator, current time, and multi-provider web
-  search (Tavily → SerpApi → ddgs fallback).
+  search (Tavily, SerpApi, or ddgs fallback).
 - Deterministic offline model: the full loop runs without an API key.
 - Append-only JSONL traces for every run.
 - CLI with `run`, `tools` and `config` commands, JSON output, and trace support.
 - Optional Streamlit UI with live reasoning events and run statistics.
 - 97 tests, 91%+ coverage, ruff, mypy strict, and a CI matrix for Python
-  3.10–3.13.
+  3.10-3.13.
 
 ## Architecture
 
@@ -97,7 +93,7 @@ cp .env.example .env
 mini-agent run -q "Calculate (25+15)*3-8"
 ```
 
-No API key? Run the deterministic offline model:
+To run without an API key, use the deterministic offline model:
 
 ```bash
 mini-agent run -q "Calculate (25+15)*3-8" --mock
@@ -268,18 +264,19 @@ examples/         # standalone examples
 ## Limitations
 
 - The text protocol depends on the model's instruction-following ability.
-  Native function calling is a planned adapter, not the current default.
+  Native function calling is planned as an adapter; the runtime currently uses
+  the text protocol.
 - The runtime is synchronous and executes one tool call per step.
 - Conversation history is in-memory only; persistence is left to the caller.
-- The calculator is a safe evaluator, not a general-purpose sandbox. Treat tool
-  output and web content as untrusted input.
+- The calculator evaluates arithmetic expressions through an AST whitelist; it
+  does not provide a general execution sandbox. Treat tool output and web
+  content as untrusted input.
 - Web search quality and availability depend on the configured provider.
 
 ## Contributing
 
-Bug reports, design feedback and pull requests are welcome. Please read
-[CONTRIBUTING.md](CONTRIBUTING.md) before opening a PR. Security issues should
-follow [SECURITY.md](SECURITY.md), not the public issue tracker.
+Bug reports, design feedback and pull requests are welcome. Report security issues
+privately according to [SECURITY.md](SECURITY.md).
 
 ## License
 
