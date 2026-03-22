@@ -30,6 +30,7 @@ from .tools import (
     current_time,
     web_search,
 )
+from .trace import TraceRecorder
 
 __all__ = [
     "ChatModel",
@@ -46,6 +47,7 @@ __all__ = [
     "ToolResult",
     "ToolSpec",
     "ToolValidationError",
+    "TraceRecorder",
     "Usage",
     "build_default_registry",
     "build_model",
