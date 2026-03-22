@@ -12,6 +12,14 @@ from .errors import (
     ToolError,
     ToolValidationError,
 )
+from .llm import (
+    ChatModel,
+    LLMClient,
+    LLMResponse,
+    RetryPolicy,
+    Usage,
+    build_model,
+)
 from .tools import (
     ToolParameter,
     ToolRegistry,
@@ -24,17 +32,23 @@ from .tools import (
 )
 
 __all__ = [
+    "ChatModel",
     "Config",
     "ConfigError",
+    "LLMClient",
     "LLMError",
+    "LLMResponse",
     "MiniAgentError",
+    "RetryPolicy",
     "ToolError",
     "ToolParameter",
     "ToolRegistry",
     "ToolResult",
     "ToolSpec",
     "ToolValidationError",
+    "Usage",
     "build_default_registry",
+    "build_model",
     "calculator",
     "current_time",
     "load_env",
