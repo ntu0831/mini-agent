@@ -4,14 +4,9 @@ from __future__ import annotations
 
 __version__ = "0.1.0"
 
+from .agent import AgentEvent, MiniAgent, RunResult, Turn
 from .config import Config, load_env
-from .errors import (
-    ConfigError,
-    LLMError,
-    MiniAgentError,
-    ToolError,
-    ToolValidationError,
-)
+from .errors import ConfigError, LLMError, MiniAgentError, ToolError, ToolValidationError
 from .llm import (
     ChatModel,
     LLMClient,
@@ -33,14 +28,17 @@ from .tools import (
 from .trace import TraceRecorder
 
 __all__ = [
+    "AgentEvent",
     "ChatModel",
     "Config",
     "ConfigError",
     "LLMClient",
     "LLMError",
     "LLMResponse",
+    "MiniAgent",
     "MiniAgentError",
     "RetryPolicy",
+    "RunResult",
     "ToolError",
     "ToolParameter",
     "ToolRegistry",
@@ -48,6 +46,7 @@ __all__ = [
     "ToolSpec",
     "ToolValidationError",
     "TraceRecorder",
+    "Turn",
     "Usage",
     "build_default_registry",
     "build_model",
