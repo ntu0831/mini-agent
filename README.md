@@ -46,12 +46,12 @@ flowchart LR
     Q[Question] --> A[MiniAgent]
     A -->|prompt| M[ChatModel]
     M -->|Thought + Action| A
-    A -->|tool[argument]| R[ToolRegistry]
+    A -->|"tool[argument]"| R[ToolRegistry]
     R --> C[calculator]
     R --> T[current_time]
     R --> S[web_search]
     R -->|Observation| A
-    A -->|Finish[answer]| Answer[RunResult]
+    A -->|"Finish[answer]"| Answer[RunResult]
     A -.events.-> Trace[(JSONL trace)]
 ```
 
